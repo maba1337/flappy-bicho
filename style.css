@@ -1,0 +1,21 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #70c5ce;
+}
+
+#gameContainer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+canvas {
+    background-color: #70c5ce;
+    display: block;
+}
