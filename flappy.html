@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flappy Bird Clone</title>
+    <title>Flappy Bicho</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="gameContainer">
         <canvas id="gameCanvas"></canvas>
+        <button id="muteButton">Mute</button>
+        <button id="pauseButton">Pause</button>
+        <div id="gameOverMessage">Restart!</div>
+        <div id="score">Score: 0</div> <!-- Score display element -->
     </div>
-    <audio id="flapSound" src="res/sound/woof.mp3"></audio>
-    <audio id="hitSound" src="res/sound/woof.mp3"></audio>
-    <audio id="pointSound" src="res/sound/woof.mp3"></audio>
-    <audio id="bgMusic" src="res/sound/shibuya.mp3" loop></audio>
     <script src="script.js"></script>
 </body>
 </html>

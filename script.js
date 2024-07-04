@@ -1,8 +1,14 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-canvas.width = 320;
-canvas.height = 480;
+// Adjust canvas size to fit container
+function resizeCanvas() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+}
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 
 // Load bird and pipe images
 const birdImg = new Image();
@@ -20,8 +26,8 @@ const bird = {
     y: 150,
     width: 20,
     height: 20,
-    gravity: 0.6,
-    lift: -15,
+    gravity: 0.1,
+    lift: -3,
     velocity: 0
 };
 
@@ -30,12 +36,31 @@ const pipeWidth = 20;
 const pipeGap = 100;
 let frame = 0;
 let score = 0;
+let isGameStarted = false;
+let isGamePaused = false;
 
-// Load sound effects and background music
-const flapSound = document.getElementById("flapSound");
-const hitSound = document.getElementById("hitSound");
-const pointSound = document.getElementById("pointSound");
-const bgMusic = document.getElementById("bgMusic");
+
+const flapSound = new Audio('res/sound/woof.mp3');
+const hitSound = new Audio('res/sound/hit.mp3');
+const pointSound = new Audio('res/sound/point.mp3');
+const bgMusic = new Audio('res/sound/shibuya.mp3');
+
+// Preload all sounds
+flapSound.load();
+hitSound.load();
+pointSound.load();
+bgMusic.load();
+
+// Adjust background music volume
+bgMusic.volume = 0.1; // Set background music volume to 10%
+
+// Adjust sound effects volumes
+flapSound.volume = 0.3; // Set flap sound volume to 30%
+hitSound.volume = 0.2; // Set hit sound volume to 50%
+pointSound.volume = 0.2; // Set point sound volume to 70%
+
+
+bgMusic.loop = true;
 bgMusic.play();
 
 // Draw the bird on the canvas
@@ -61,13 +86,14 @@ function updateBird() {
         bird.y = canvas.height - bird.height;
         bird.velocity = 0;
         hitSound.play();
-        resetGame();
+        showGameOverMessage();
+        resetGame(); // Reset game immediately
     }
 }
 
 // Update pipes' position and manage pipe creation
 function updatePipes() {
-    if (frame % 90 === 0) {
+    if (frame % 120 === 0) {  // Delay first pipe appearance
         const pipeTop = Math.random() * (canvas.height - pipeGap);
         const pipeBottom = canvas.height - pipeTop - pipeGap;
         pipes.push({ x: canvas.width, top: pipeTop, bottom: pipeBottom, scored: false });
@@ -89,6 +115,7 @@ function updatePipes() {
             (bird.y < pipe.top || bird.y + bird.height > canvas.height - pipe.bottom)
         ) {
             hitSound.play();
+            showGameOverMessage();
             resetGame();
         }
     });
@@ -102,20 +129,25 @@ function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBird();
     drawPipes();
-    ctx.fillStyle = "#000";
-    ctx.font = "16px Arial";
-    ctx.fillText("Score: " + score, 10, 20);
+}
+
+function updateScore() {
+    const playerScorePara = document.getElementById("score");
+    playerScorePara.textContent = `Score: ${score}`;
 }
 
 // Update game elements (bird, pipes)
 function update() {
-    updateBird();
-    updatePipes();
+    if (isGameStarted && !isGamePaused) {
+        updateBird();
+        updatePipes();
+    }
 }
 
 // Main game loop
 function gameLoop() {
     draw();
+    updateScore();
     update();
     frame++;
     requestAnimationFrame(gameLoop);
@@ -123,25 +155,94 @@ function gameLoop() {
 
 // Event listener for mouse click to make the bird flap
 canvas.addEventListener("click", () => {
-    bird.velocity = bird.lift;
-    flapSound.play();
+    if (!isGameStarted) {
+        resetGame();
+        isGameStarted = true;
+    }
+    if (!isGamePaused) {
+        bird.velocity = bird.lift;
+        flapSound.play();
+    }
+
+    // Hide game over message when game restarts
+    hideGameOverMessage();
 });
 
 // Event listener for keydown (space or arrow up) to make the bird flap
 document.addEventListener("keydown", (event) => {
-    if (event.code === "Space" || event.code === "ArrowUp") {
+    if (!isGameStarted) {
+        resetGame();
+        isGameStarted = true;
+    }
+    if (!isGamePaused && (event.code === "Space" || event.code === "ArrowUp")) {
         bird.velocity = bird.lift;
         flapSound.play();
     }
+
+    // Hide game over message when game restarts
+    hideGameOverMessage();
 });
+
+// Mute button functionality
+const muteButton = document.getElementById("muteButton");
+muteButton.addEventListener("click", () => {
+    if (bgMusic.paused) {
+        bgMusic.play();
+        muteButton.textContent = "Mute";
+    } else {
+        bgMusic.pause();
+        muteButton.textContent = "Unmute";
+    }
+});
+
+// Pause button functionality
+const pauseButton = document.getElementById("pauseButton");
+pauseButton.addEventListener("click", () => {
+    isGamePaused = !isGamePaused;
+    pauseButton.textContent = isGamePaused ? "Resume" : "Pause";
+    if (!isGamePaused && !bgMusic.paused) {
+        bgMusic.play();
+    } else {
+        bgMusic.pause();
+    }
+});
+
+// Game over message functionality
+const gameOverMessage = document.getElementById("gameOverMessage");
+function showGameOverMessage() {
+    gameOverMessage.style.display = "block";
+
+
+}
+
+function hideGameOverMessage() {
+    gameOverMessage.style.display = "none";
+
+}
 
 // Reset game state
 function resetGame() {
+    // Reset bird position and velocity
     bird.y = 150;
     bird.velocity = 0;
+    
+    // Clear pipes and reset score and frame count
     pipes = [];
     score = 0;
     frame = 0;
+    
+    // Reset game flags
+    isGameStarted = false;
+    isGamePaused = false;
+    
+    // Hide game over message if it's visible
+    //hideGameOverMessage();
+    
+    // Reset pause button text
+    pauseButton.textContent = "Pause";
+    
+    // Ensure background music is playing
+    bgMusic.play();
 }
 
 // Start the game loop
