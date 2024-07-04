@@ -15,10 +15,10 @@ const birdImg = new Image();
 birdImg.src = 'res/img/bicho.png';
 
 const pipeTopImg = new Image();
-pipeTopImg.src = 'res/img/green.png';
+pipeTopImg.src = 'res/img/pip_t.png';
 
 const pipeBottomImg = new Image();
-pipeBottomImg.src = 'res/img/green.png';
+pipeBottomImg.src = 'res/img/pip_b.png';
 
 // Bird properties
 const bird = {
@@ -27,7 +27,7 @@ const bird = {
     width: 20,
     height: 20,
     gravity: 0.1,
-    lift: -3,
+    lift: -3.5,
     velocity: 0
 };
 
@@ -52,16 +52,17 @@ pointSound.load();
 bgMusic.load();
 
 // Adjust background music volume
-bgMusic.volume = 0.1; // Set background music volume to 10%
+bgMusic.volume = 0.008; // Set background music volume to 10%
 
 // Adjust sound effects volumes
-flapSound.volume = 0.3; // Set flap sound volume to 30%
-hitSound.volume = 0.2; // Set hit sound volume to 50%
-pointSound.volume = 0.2; // Set point sound volume to 70%
+flapSound.volume = 0.1; // Set flap sound volume to 30%
+hitSound.volume = 0.01; // Set hit sound volume to 50%
+pointSound.volume = 0.01; // Set point sound volume to 70%
 
-
+// Initialize background music muted state
+let bgMusicMuted = true; // Assume background music starts muted
 bgMusic.loop = true;
-bgMusic.play();
+bgMusic.play()
 
 // Draw the bird on the canvas
 function drawBird() {
@@ -188,9 +189,11 @@ const muteButton = document.getElementById("muteButton");
 muteButton.addEventListener("click", () => {
     if (bgMusic.paused) {
         bgMusic.play();
+        bgMusicMuted = false; // Background music is now unmuted
         muteButton.textContent = "Mute";
     } else {
         bgMusic.pause();
+        bgMusicMuted = true; // Background music is now muted
         muteButton.textContent = "Unmute";
     }
 });
@@ -241,8 +244,10 @@ function resetGame() {
     // Reset pause button text
     pauseButton.textContent = "Pause";
     
-    // Ensure background music is playing
-    bgMusic.play();
+    // Ensure background music is playing only if not muted
+    if (!bgMusicMuted) {
+        bgMusic.play();
+    }
 }
 
 // Start the game loop
